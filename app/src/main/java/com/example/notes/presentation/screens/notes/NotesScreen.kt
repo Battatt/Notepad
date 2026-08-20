@@ -1,16 +1,11 @@
 package com.example.notes.presentation.screens.notes
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -29,7 +24,7 @@ fun NotesScreen(
     val state by viewModel.state.collectAsState()
 
     LazyColumn(
-        modifier = Modifier
+        modifier = modifier
             .padding(top = 40.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -38,22 +33,32 @@ fun NotesScreen(
                 modifier = Modifier,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(state.pinnedNotes) { note ->
+                items(
+                    items = state.pinnedNotes,
+                    key = { note -> note.id }
+                ) { note ->
                     NotesCard(
                         note = note,
                         onNoteClick = {
-                            viewModel.processCommand(NotesCommand.SwitchPinnedStatus(note.id))
+                            viewModel.processCommand(
+                                NotesCommand.SwitchPinnedStatus(note.id)
+                            )
                         }
                     )
                 }
             }
         }
 
-        items(state.otherNotes) { note ->
+        items(
+            items = state.otherNotes,
+            key = { note -> note.id }
+            ) { note ->
             NotesCard(
                 note = note,
                 onNoteClick = {
-                    viewModel.processCommand(NotesCommand.SwitchPinnedStatus(note.id))
+                    viewModel.processCommand(
+                        NotesCommand.SwitchPinnedStatus(note.id)
+                    )
                 }
             )
         }
@@ -67,7 +72,7 @@ fun NotesCard(
     onNoteClick: (Note) -> Unit = {},
 ) {
     Text(
-        modifier = Modifier.clickable {
+        modifier = modifier.clickable {
             onNoteClick(note)
         },
         text = "${note.title} - ${note.content}",
