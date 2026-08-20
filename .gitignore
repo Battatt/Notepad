@@ -1,15 +1,32 @@
+# Папки сборки (убираем косую черту в начале, чтобы скрывать build везде)
+build/
+app/build/
+.gradle/
+.kotlin/
+
+# Конфигурации Android Studio
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/assetWizardSettings.xml
+.idea/dictionaries
+.idea/libraries
+.idea/caches
+.idea/shelf
+.idea/modules.xml
+.idea/navEditor.xml
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+
+# Локальные файлы разработчика
 local.properties
+.secrets
+.env
+
+# Временные файлы систем и логи
+*.DS_Store
+Thumbs.db
+*.log
+captures/
+.externalNativeBuild/
+.cxx/
+
+.idea/
