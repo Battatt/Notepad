@@ -10,17 +10,22 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -30,145 +35,171 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.notes.R
 import com.example.notes.domain.Note
 import com.example.notes.presentation.ui.theme.OtherNotesColors
 import com.example.notes.presentation.ui.theme.PinnedNotesColors
+import com.example.notes.presentation.utils.DateFormatter
 
 @Composable
 fun NotesScreen(
     modifier: Modifier = Modifier,
-    viewModel: NotesViewModel = viewModel()
+    viewModel: NotesViewModel = viewModel(),
+    onNoteClick: (Note) -> Unit,
+    onFloatingActionButtonClick: () -> Unit,
+
 ) {
     val state by viewModel.state.collectAsState()
 
-    LazyColumn(
-        modifier = modifier
-            .padding(top = 48.dp),
-    ) {
-        item {
-            Title(
-                modifier = Modifier.padding(horizontal = 24.dp),
-                text = "All Notes"
-            )
-        }
-
-        item {
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
-        }
-
-        item {
-            SearchBar(
-                modifier = Modifier.padding(horizontal = 24.dp),
-                query = state.query,
-                onQueryChange = {
-                    viewModel.processCommand(NotesCommand.InputSearchQuery(it))
-                }
-            )
-        }
-
-        item {
-            Spacer(
-                modifier = Modifier.height(24.dp)
-            )
-        }
-
-        item {
-            SubTitle(
-                modifier = Modifier.padding(horizontal = 24.dp),
-                text = "Pinned"
-            )
-        }
-
-        item {
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
-        }
-
-        item {
-            LazyRow(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(horizontal = 24.dp)  // Without horizontal cropping content
+    Scaffold(
+        modifier = modifier,
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onFloatingActionButtonClick,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                containerColor = MaterialTheme.colorScheme.primary,
+                shape = CircleShape,
             ) {
-                itemsIndexed(
-                    items = state.pinnedNotes,
-                    key = { _, note -> note.id }
-                ) { index, note ->
-                    NoteCard(
-                        note = note,
-                        onNoteClick = {
-                            viewModel.processCommand(
-                                NotesCommand.EditNote(note)
+                Icon(
+                    painter = painterResource(R.drawable.ic_add_note),
+                    contentDescription = "Button add note"
+                )
+            }
+        },
+    ) { innerPadding ->
+        LazyColumn(
+            contentPadding = innerPadding,
+        ) {
+            item {
+                Title(
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    text = "All Notes"
+                )
+            }
+
+            item {
+                Spacer(
+                    modifier = Modifier.height(16.dp)
+                )
+            }
+
+            item {
+                SearchBar(
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    query = state.query,
+                    onQueryChange = {
+                        viewModel.processCommand(NotesCommand.InputSearchQuery(it))
+                    }
+                )
+            }
+
+            item {
+                Spacer(
+                    modifier = Modifier.height(24.dp)
+                )
+            }
+
+            if (state.pinnedNotes.isNotEmpty()) {
+                item {
+                    SubTitle(
+                        modifier = Modifier.padding(horizontal = 24.dp),
+                        text = "Pinned"
+                    )
+                }
+
+                item {
+                    Spacer(
+                        modifier = Modifier.height(16.dp)
+                    )
+                }
+
+                item {
+                    LazyRow(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(horizontal = 24.dp)  // Without horizontal cropping content
+                    ) {
+                        itemsIndexed(
+                            items = state.pinnedNotes,
+                            key = { _, note -> note.id }
+                        ) { index, note ->
+                            NoteCard(
+                                modifier = Modifier
+                                    .widthIn(max = 160.dp),
+                                note = note,
+                                onNoteClick = onNoteClick,
+                                onLongClick = {
+                                    viewModel.processCommand(
+                                        NotesCommand.SwitchPinnedStatus(note.id)
+                                    )
+                                },
+                                backgroundColor = PinnedNotesColors[index % PinnedNotesColors.size],
                             )
-                        },
-                        onDoubleClick = {
-                            viewModel.processCommand(NotesCommand.DeleteNote(note.id))
-                        },
+                        }
+                    }
+                }
+
+                item {
+                    Spacer(
+                        modifier = Modifier.height(24.dp)
+                    )
+                }
+            }
+
+            item {
+                SubTitle(
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    text = "Others"
+                )
+            }
+
+            if (state.otherNotes.isNotEmpty()) {
+                item {
+                    Spacer(
+                        modifier = Modifier.height(16.dp)
+                    )
+                }
+
+                itemsIndexed(
+                    items = state.otherNotes,
+                    key = { _, note -> note.id }
+                )
+                { index, note ->
+                    NoteCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
+                        note = note,
+                        onNoteClick = onNoteClick,
                         onLongClick = {
                             viewModel.processCommand(
                                 NotesCommand.SwitchPinnedStatus(note.id)
                             )
                         },
-                        backgroundColor = PinnedNotesColors[index % PinnedNotesColors.size],
+                        backgroundColor = OtherNotesColors[index % OtherNotesColors.size],
+                    )
+                    Spacer(
+                        modifier = Modifier.height(8.dp)
                     )
                 }
             }
-        }
-
-        item {
-            Spacer(
-                modifier = Modifier.height(24.dp)
-            )
-        }
-
-        item {
-            SubTitle(
-                modifier = Modifier.padding(horizontal = 24.dp),
-                text = "Others"
-            )
-        }
-
-        item {
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
-        }
-
-        itemsIndexed(
-            items = state.otherNotes,
-            key = { _, note -> note.id }
-            )
-        { index, note ->
-            NoteCard(
-                modifier = Modifier.fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                note = note,
-                onNoteClick = {
-                    viewModel.processCommand(
-                        NotesCommand.EditNote(note)
+            else {
+                item {
+                    EmptyNotesMessage(
+                        modifier = Modifier
+                            .fillMaxSize()
                     )
-                },
-                onDoubleClick = {
-                    viewModel.processCommand(NotesCommand.DeleteNote(note.id))
-                },
-                onLongClick = {
-                    viewModel.processCommand(
-                        NotesCommand.SwitchPinnedStatus(note.id)
-                    )
-                },
-                backgroundColor = OtherNotesColors[index % OtherNotesColors.size],
-            )
-            Spacer(
-                modifier = Modifier.height(8.dp)
-            )
+                }
+            }
+
         }
     }
 }
@@ -248,7 +279,6 @@ fun NoteCard(
     backgroundColor: Color,
     onNoteClick: (Note) -> Unit = {},
     onLongClick: (Note) -> Unit = {},
-    onDoubleClick: (Note) -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -261,9 +291,6 @@ fun NoteCard(
                 onLongClick = {
                     onLongClick(note)
                 },
-                onDoubleClick = {
-                    onDoubleClick(note)
-                }
             )
             .padding(16.dp),
     ) {
@@ -271,12 +298,14 @@ fun NoteCard(
             text = note.title,
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
         Spacer(
             modifier = Modifier.height(8.dp)
         )
         Text(
-            text = note.updatedAt.toString(),
+            text = DateFormatter.formatDateToString(note.updatedAt),
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -287,7 +316,23 @@ fun NoteCard(
             text = note.content,
             fontSize = 16.sp,
             color = MaterialTheme.colorScheme.onSurface,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis,
         )
     }
+}
+
+@Composable
+private fun EmptyNotesMessage(
+    modifier: Modifier = Modifier
+) {
+    Text(
+        modifier = modifier,
+        text = "The Notes List is empty...",
+        fontSize = 14.sp,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Center
+    )
 }
