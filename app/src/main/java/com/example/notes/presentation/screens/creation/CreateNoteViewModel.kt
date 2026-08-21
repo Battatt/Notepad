@@ -26,7 +26,7 @@ class CreateNoteViewModel: ViewModel() {
                 _state.update { previousState ->
                     if (previousState is CreateNoteState.Creation) {
                         previousState.copy(
-                            title = command.content,
+                            content = command.content,
                             isSaveEnabled = (previousState.title.isNotBlank() &&
                                     command.content.isNotBlank())
                         )
