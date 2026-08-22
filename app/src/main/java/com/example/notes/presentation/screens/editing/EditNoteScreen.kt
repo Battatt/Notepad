@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -33,9 +32,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.notes.presentation.screens.creation.CreateNoteCommand
-import com.example.notes.presentation.screens.creation.CreateNoteState
-import com.example.notes.presentation.screens.creation.CreateNoteViewModel
 import com.example.notes.presentation.screens.editing.EditNoteCommand.*
 import com.example.notes.presentation.utils.DateFormatter
 
@@ -69,7 +65,7 @@ fun EditNoteScreen(
                             Icon(
                                 modifier = Modifier.padding(start = 16.dp, end = 8.dp)
                                     .clickable {
-                                        viewModel.processCommand(EditNoteCommand.Back)
+                                        viewModel.processCommand(Back)
                                     },
                                 imageVector = Icons.AutoMirrored.Default.ArrowBack,
                                 contentDescription = "Button back"
@@ -169,7 +165,7 @@ fun EditNoteScreen(
                             .padding(horizontal = 24.dp),
                         shape = RoundedCornerShape(10.dp),
                         onClick = {
-                            viewModel.processCommand(EditNoteCommand.Save)
+                            viewModel.processCommand(Save)
                         },
                         enabled = currentState.isSaveEnabled,
                         colors = ButtonDefaults.buttonColors(
