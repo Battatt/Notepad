@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.example.notes.presentation.screens.creation
+package com.example.notes.presentation.screens.editing
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,26 +33,33 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.notes.presentation.screens.creation.CreateNoteCommand
+import com.example.notes.presentation.screens.creation.CreateNoteState
+import com.example.notes.presentation.screens.creation.CreateNoteViewModel
+import com.example.notes.presentation.screens.editing.EditNoteCommand.*
 import com.example.notes.presentation.utils.DateFormatter
 
 
 @Composable
-fun CreateNoteScreen(
+fun EditNoteScreen(
     modifier: Modifier = Modifier,
-    viewModel: CreateNoteViewModel = viewModel(),
+    noteId: Int,
+    viewModel: EditNoteViewModel = viewModel {
+        EditNoteViewModel(noteId)
+    },
     onFinished: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
 
     when (val currentState = state) {
-        is CreateNoteState.Creation -> {
+        is EditNoteState.Editing -> {
             Scaffold(
                 modifier = modifier,
                 topBar = {
                     TopAppBar(
                         title = {
                             Text(
-                                text = "Create Note",
+                                text = "Edit Note",
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onBackground,
@@ -60,10 +69,20 @@ fun CreateNoteScreen(
                             Icon(
                                 modifier = Modifier.padding(start = 16.dp, end = 8.dp)
                                     .clickable {
-                                        viewModel.processCommand(CreateNoteCommand.Back)
+                                        viewModel.processCommand(EditNoteCommand.Back)
                                     },
                                 imageVector = Icons.AutoMirrored.Default.ArrowBack,
                                 contentDescription = "Button back"
+                            )
+                        },
+                        actions = {
+                            Icon(
+                                modifier = Modifier.padding(start = 16.dp)
+                                    .clickable {
+                                        viewModel.processCommand(EditNoteCommand.Delete)
+                                    },
+                                imageVector = Icons.Outlined.Delete,
+                                contentDescription = "Delete note"
                             )
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
@@ -80,9 +99,9 @@ fun CreateNoteScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 8.dp),
-                        value = currentState.title,
+                        value = currentState.note.title,
                         onValueChange = {
-                            viewModel.processCommand(CreateNoteCommand.InputTitle(it))
+                            viewModel.processCommand(InputTitle(it))
                         },
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
@@ -109,7 +128,8 @@ fun CreateNoteScreen(
 
                     Text(
                         modifier = Modifier.padding(horizontal = 24.dp),
-                        text = DateFormatter.formatCurrentDate(),
+                        text = DateFormatter
+                            .formatDateToString(currentState.note.updatedAt),
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -119,9 +139,9 @@ fun CreateNoteScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 8.dp)
                             .weight(1f),
-                        value = currentState.content,
+                        value = currentState.note.content,
                         onValueChange = {
-                            viewModel.processCommand(CreateNoteCommand.InputContent(it))
+                            viewModel.processCommand(InputContent(it))
                         },
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
@@ -149,7 +169,7 @@ fun CreateNoteScreen(
                             .padding(horizontal = 24.dp),
                         shape = RoundedCornerShape(10.dp),
                         onClick = {
-                            viewModel.processCommand(CreateNoteCommand.Save)
+                            viewModel.processCommand(EditNoteCommand.Save)
                         },
                         enabled = currentState.isSaveEnabled,
                         colors = ButtonDefaults.buttonColors(
@@ -169,10 +189,14 @@ fun CreateNoteScreen(
             }
         }
 
-        CreateNoteState.Finished -> {
+        EditNoteState.Finished -> {
             LaunchedEffect(key1 = Unit) {
                 onFinished()
             }
+        }
+
+        EditNoteState.Initial -> {
+
         }
     }
 }
