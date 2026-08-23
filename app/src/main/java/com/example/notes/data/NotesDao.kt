@@ -28,6 +28,6 @@ interface NotesDao {
     )
     suspend fun addNote(note: NoteDbModel)
 
-
-
+    @Query("SELECT * FROM notes WHERE id = :noteId")
+    suspend fun getNote(noteId: Int): NoteDbModel
 }
