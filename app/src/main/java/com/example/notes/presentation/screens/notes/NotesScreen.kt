@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.notes.R
+import com.example.notes.domain.ContentItem
 import com.example.notes.domain.Note
 import com.example.notes.presentation.ui.theme.OtherNotesColors
 import com.example.notes.presentation.ui.theme.PinnedNotesColors
@@ -190,8 +191,7 @@ fun NotesScreen(
                         modifier = Modifier.height(8.dp)
                     )
                 }
-            }
-            else {
+            } else {
                 item {
                     EmptyNotesMessage(
                         modifier = Modifier
@@ -312,14 +312,22 @@ fun NoteCard(
         Spacer(
             modifier = Modifier.height(24.dp)
         )
-        Text(
-            text = note.content,
-            fontSize = 16.sp,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontWeight = FontWeight.Medium,
-            maxLines = 3,
-            overflow = TextOverflow.Ellipsis,
-        )
+
+        note.content
+            .filterIsInstance<ContentItem.Text>().joinToString("\n") {
+                it.content
+            }.let {
+                Text(
+                    text = it,
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+
+
     }
 }
 
