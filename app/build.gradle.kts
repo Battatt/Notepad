@@ -61,6 +61,9 @@ dependencies {
 
     implementation(libs.kotlinx.serialization.json)
 
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+
     // Jetpack Compose integration
     implementation(libs.androidx.navigation.compose)
     testImplementation(libs.junit)
