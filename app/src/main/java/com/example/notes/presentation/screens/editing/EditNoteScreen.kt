@@ -2,6 +2,8 @@
 
 package com.example.notes.presentation.screens.editing
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,11 +34,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.notes.domain.ContentItem
+import com.example.notes.presentation.ui.theme.Content
+import com.example.notes.presentation.screens.creation.CreateNoteCommand
 import com.example.notes.presentation.screens.editing.EditNoteCommand.Back
 import com.example.notes.presentation.screens.editing.EditNoteCommand.InputContent
 import com.example.notes.presentation.screens.editing.EditNoteCommand.InputTitle
 import com.example.notes.presentation.screens.editing.EditNoteCommand.Save
+import com.example.notes.presentation.ui.theme.CustomIcons
 import com.example.notes.presentation.utils.DateFormatter
 
 
@@ -52,6 +56,15 @@ fun EditNoteScreen(
     onFinished: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
+
+    val imagePicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent(),
+        onResult = { uri ->
+            uri?.let {
+                viewModel.processCommand(EditNoteCommand.AddImage(uri))
+            }
+        }
+    )
 
     when (val currentState = state) {
         is EditNoteState.Editing -> {
@@ -79,7 +92,15 @@ fun EditNoteScreen(
                         },
                         actions = {
                             Icon(
-                                modifier = Modifier.padding(start = 16.dp)
+                                modifier = Modifier.padding(end = 16.dp)
+                                    .clickable {
+                                        imagePicker.launch("image/*")
+                                    },
+                                imageVector = CustomIcons.AddPhoto,
+                                contentDescription = "Add image"
+                            )
+                            Icon(
+                                modifier = Modifier.padding(end = 24.dp)
                                     .clickable {
                                         viewModel.processCommand(EditNoteCommand.Delete)
                                     },
@@ -136,16 +157,23 @@ fun EditNoteScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
 
-                    currentState.note.content.filterIsInstance<ContentItem.Text>()
-                        .forEach { contentItemText ->
-                            TextContent(
-                                modifier = Modifier.weight(1f),
-                                text = contentItemText.content,
-                                onValueChange = {
-                                    viewModel.processCommand(InputContent(it))
-                                }
+                    Content(
+                        modifier = Modifier.weight(1f),
+                        content = currentState.note.content,
+                        onTextChanged = { index, text ->
+                            viewModel.processCommand(
+                                InputContent(
+                                    content = text,
+                                    index = index
+                                )
+                            )
+                        },
+                        onDeleteImageClick = {
+                            viewModel.processCommand(
+                                EditNoteCommand.DeleteImage(index = it)
                             )
                         }
+                    )
 
 
                     Button(
@@ -184,38 +212,4 @@ fun EditNoteScreen(
 
         }
     }
-}
-
-@Composable
-private fun TextContent(
-    modifier: Modifier = Modifier,
-    text: String,
-    onValueChange: (String) -> Unit,
-) {
-    TextField(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp),
-        value = text,
-        onValueChange = onValueChange,
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.Transparent,
-            unfocusedContainerColor = Color.Transparent,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-        ),
-        placeholder = {
-            Text(
-                text = "Note something down",
-                fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onBackground.copy(
-                    alpha = 0.2f,
-                )
-            )
-        },
-        textStyle = TextStyle(
-            fontSize = 16.sp,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-    )
 }
