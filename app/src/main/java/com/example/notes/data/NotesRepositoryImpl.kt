@@ -7,7 +7,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class NotesRepositoryImpl private constructor(
-    private val notesDao: NotesDao
+    private val notesDao: NotesDao,
+    private val imageFileManager: ImageFileManager
 ) : NotesRepository {
 
     override suspend fun addNote(
@@ -17,19 +18,37 @@ class NotesRepositoryImpl private constructor(
         updatedAt: Long
     ) {
         val note = Note(
-            id = 0, title, content, updatedAt, isPinned
+            id = 0, title, content.processForStorage(), updatedAt, isPinned
         )
         val noteDbModel = note.toDbModel()
         notesDao.addNote(noteDbModel)
     }
 
     override suspend fun deleteNote(noteId: Int) {
+        val note = notesDao.getNote(noteId).toEntity()
         notesDao.deleteNote(noteId)
+        note.content.filterIsInstance<ContentItem.Image>().forEach { image ->
+            imageFileManager.deleteImageFromInternalStorage(image.url)
+        }
     }
 
     override suspend fun editNote(note: Note) {
+        val oldNote = notesDao.getNote(note.id).toEntity()
+        val oldUrls = oldNote.content.filterIsInstance<ContentItem.Image>().map { it.url }
+        val newUrls = note.content.filterIsInstance<ContentItem.Image>().map { it.url }
+        val removedUrls = oldUrls - newUrls.toSet()
+
+        removedUrls.forEach {
+            imageFileManager.deleteImageFromInternalStorage(it)
+        }
+
+        val processedContent = note.content.processForStorage()
+        val processedNote = note.copy(
+            content = processedContent
+        )
+
         notesDao.addNote(
-            note.toDbModel()
+            processedNote.toDbModel()
         )
     }
 
@@ -53,16 +72,39 @@ class NotesRepositoryImpl private constructor(
         notesDao.switchPinnedStatus(noteId)
     }
 
+    private suspend fun List<ContentItem>.processForStorage(): List<ContentItem> {
+        return map { contentItem ->
+            when (contentItem) {
+                is ContentItem.Image -> {
+                    if (imageFileManager.isInternal(contentItem.url)) {
+                        contentItem
+                    } else {
+                        val internalPath =
+                            imageFileManager.copyImageToInternalStorage(contentItem.url)
+                        ContentItem.Image(internalPath)
+                    }
+                }
+
+                is ContentItem.Text -> {
+                    contentItem
+                }
+            }
+        }
+    }
+
     companion object {
         private var instance: NotesRepositoryImpl? = null
         private val LOCK = Any()
 
-        fun getInstance(notesDao: NotesDao): NotesRepositoryImpl {
+        fun getInstance(
+            notesDao: NotesDao,
+            imageFileManager: ImageFileManager
+        ): NotesRepositoryImpl {
             instance?.let { return it }
             synchronized(LOCK) {
                 instance?.let { return it }
 
-                return NotesRepositoryImpl(notesDao).also { instance = it }
+                return NotesRepositoryImpl(notesDao, imageFileManager).also { instance = it }
             }
         }
     }

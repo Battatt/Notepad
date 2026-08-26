@@ -1,6 +1,7 @@
 package com.example.notes.di
 
 import android.content.Context
+import com.example.notes.data.ImageFileManager
 import com.example.notes.data.NotesDao
 import com.example.notes.data.NotesDatabase
 import com.example.notes.data.NotesRepositoryImpl
@@ -19,8 +20,11 @@ interface DataModule {
     companion object {
         @Singleton
         @Provides
-        fun provideNotesRepositoryImpl(notesDao: NotesDao): NotesRepository {
-            return NotesRepositoryImpl.getInstance(notesDao)
+        fun provideNotesRepositoryImpl(
+            notesDao: NotesDao,
+            imageFileManager: ImageFileManager
+        ): NotesRepository {
+            return NotesRepositoryImpl.getInstance(notesDao, imageFileManager)
         }
 
         @Singleton
