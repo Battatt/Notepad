@@ -6,35 +6,51 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 fun Note.toDbModel(): NoteDbModel {
-    val contentAsString = Json.encodeToString(
-        content.toContentItemDbModels()
-    )
-    return NoteDbModel(id, title, contentAsString, updatedAt, isPinned)
+    return NoteDbModel(id, title, updatedAt, isPinned)
 }
 
-fun List<ContentItem>.toContentItemDbModels(): List<ContentItemDbModel> {
-    return this.map { contentItem ->
+fun List<ContentItem>.toContentItemDbModels(noteId: Int): List<ContentItemDbModel> {
+    return this.mapIndexed { index, contentItem ->
         when (contentItem) {
-            is ContentItem.Image -> ContentItemDbModel.Image(contentItem.url)
-            is ContentItem.Text -> ContentItemDbModel.Text(contentItem.content)
+            is ContentItem.Image -> {
+                ContentItemDbModel(
+                    noteId = noteId,
+                    contentType = ContentType.IMAGE,
+                    content = contentItem.url,
+                    order = index
+                )
+            }
+            is ContentItem.Text -> {
+                ContentItemDbModel(
+                    noteId = noteId,
+                    contentType = ContentType.TEXT,
+                    content = contentItem.content,
+                    order = index
+                )
+            }
         }
     }
 }
 
 fun List<ContentItemDbModel>.toContentItems(): List<ContentItem> {
     return this.map { contentItemDbModel ->
-        when (contentItemDbModel) {
-            is ContentItemDbModel.Image -> ContentItem.Image(contentItemDbModel.url)
-            is ContentItemDbModel.Text -> ContentItem.Text(contentItemDbModel.content)
+        when (contentItemDbModel.contentType) {
+            ContentType.IMAGE -> ContentItem.Image(contentItemDbModel.content)
+            ContentType.TEXT -> ContentItem.Text(contentItemDbModel.content)
         }
     }
 }
 
-fun NoteDbModel.toEntity(): Note {
-    val content = Json.decodeFromString<List<ContentItemDbModel>>(content).toContentItems()
-    return Note(id, title, content, updatedAt, isPinned)
+fun NoteWithContentDbModel.toEntity(): Note {
+    return Note(
+        id = noteDbModel.id,
+        title = noteDbModel.title,
+        content = content.toContentItems(),
+        updatedAt = noteDbModel.updatedAt,
+        isPinned = noteDbModel.isPinned
+    )
 }
 
-fun List<NoteDbModel>.toEntities(): List<Note> {
+fun List<NoteWithContentDbModel>.toEntities(): List<Note> {
     return map { it.toEntity() }
 }
