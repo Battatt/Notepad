@@ -29,13 +29,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.notes.R
 import com.example.notes.presentation.ui.theme.Content
-import com.example.notes.presentation.screens.creation.CreateNoteCommand
 import com.example.notes.presentation.screens.editing.EditNoteCommand.Back
 import com.example.notes.presentation.screens.editing.EditNoteCommand.InputContent
 import com.example.notes.presentation.screens.editing.EditNoteCommand.InputTitle
@@ -74,7 +75,7 @@ fun EditNoteScreen(
                     TopAppBar(
                         title = {
                             Text(
-                                text = "Edit Note",
+                                text = stringResource(R.string.edit_note_title),
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onBackground,
@@ -82,7 +83,8 @@ fun EditNoteScreen(
                         },
                         navigationIcon = {
                             Icon(
-                                modifier = Modifier.padding(start = 16.dp, end = 8.dp)
+                                modifier = Modifier
+                                    .padding(start = 16.dp, end = 8.dp)
                                     .clickable {
                                         viewModel.processCommand(Back)
                                     },
@@ -92,20 +94,22 @@ fun EditNoteScreen(
                         },
                         actions = {
                             Icon(
-                                modifier = Modifier.padding(end = 16.dp)
+                                modifier = Modifier
+                                    .padding(end = 16.dp)
                                     .clickable {
                                         imagePicker.launch("image/*")
                                     },
                                 imageVector = CustomIcons.AddPhoto,
-                                contentDescription = "Add image"
+                                contentDescription = stringResource(R.string.content_desc_add_image)
                             )
                             Icon(
-                                modifier = Modifier.padding(end = 24.dp)
+                                modifier = Modifier
+                                    .padding(end = 24.dp)
                                     .clickable {
                                         viewModel.processCommand(EditNoteCommand.Delete)
                                     },
                                 imageVector = Icons.Outlined.Delete,
-                                contentDescription = "Delete note"
+                                contentDescription = stringResource(R.string.content_desc_delete_note)
                             )
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
@@ -193,9 +197,9 @@ fun EditNoteScreen(
                             contentColor = MaterialTheme.colorScheme.onPrimary,
                             disabledContentColor = MaterialTheme.colorScheme.onPrimary
                         )
-                        ) {
+                    ) {
                         Text(
-                            text = "Save Note"
+                            text = stringResource(R.string.save_note_button)
                         )
                     }
                 }

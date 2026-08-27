@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Notes</string>
+    <string name="empty_notes_list_message">Список заметок пуст…</string>
+    <string name="content_desc_note_header_image">Первое изображение заметки</string>
+    <string name="search">Поиск…</string>
+    <string name="notes_others">Остальные</string>
+    <string name="notes_pinned">Закрепленные</string>
+    <string name="notes_screen_title">Все заметки</string>
+    <string name="content_desc_add_note_button">Кнопка добавить заметку</string>
+    <string name="edit_note_title">Изменить заметку</string>
+    <string name="content_desc_add_image">Добавить изображение</string>
+    <string name="content_desc_delete_note">Удалить заметку</string>
+    <string name="save_note_button">Сохранить заметку</string>
+    <string name="content_desc_add_photo">Добавить изображение</string>
+    <string name="create_note_title">Создать заметку</string>
+    <string name="note_something_down">Введите содержимое заметки</string>
+    <string name="title">Заголовок</string>
+    <string name="just_now">Недавно</string>
+    <string name="h_ago">%1$d ч назад</string>
+</resources>

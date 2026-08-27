@@ -37,9 +37,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -75,7 +77,7 @@ fun NotesScreen(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_add_note),
-                    contentDescription = "Button add note"
+                    contentDescription = stringResource(R.string.content_desc_add_note_button)
                 )
             }
         },
@@ -86,7 +88,7 @@ fun NotesScreen(
             item {
                 Title(
                     modifier = Modifier.padding(horizontal = 24.dp),
-                    text = "All Notes"
+                    text = stringResource(R.string.notes_screen_title)
                 )
             }
 
@@ -116,7 +118,7 @@ fun NotesScreen(
                 item {
                     SubTitle(
                         modifier = Modifier.padding(horizontal = 24.dp),
-                        text = "Pinned"
+                        text = stringResource(R.string.notes_pinned)
                     )
                 }
 
@@ -163,7 +165,7 @@ fun NotesScreen(
             item {
                 SubTitle(
                     modifier = Modifier.padding(horizontal = 24.dp),
-                    text = "Others"
+                    text = stringResource(R.string.notes_others)
                 )
             }
 
@@ -241,7 +243,7 @@ private fun SearchBar(
         onValueChange = onQueryChange,
         placeholder = {
             Text(
-                text = "Search...",
+                text = stringResource(R.string.search),
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -354,17 +356,33 @@ private fun TitleWithBackground(
                     .heightIn(max = 120.dp)
                     .fillMaxWidth(),
                 model = imageUrl,
-                contentDescription = "First image from note",
+                contentDescription = stringResource(R.string.content_desc_note_header_image),
                 contentScale = ContentScale.FillWidth,
             )
             textColor = MaterialTheme.colorScheme.onPrimary
         }
 
+        val backgroundModifier = if (imageUrl != null) {
+            Modifier.background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color.Transparent,
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    )
+                )
+            )
+        } else {
+            Modifier
+        }
+
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
                 .align(Alignment.BottomStart)
+                .clip(RoundedCornerShape(16.dp))
+                .then(backgroundModifier)
+                .padding(16.dp)
         ) {
             Text(
                 text = title,
@@ -389,7 +407,7 @@ private fun EmptyNotesMessage(
 ) {
     Text(
         modifier = modifier,
-        text = "The Notes List is empty...",
+        text = stringResource(R.string.empty_notes_list_message),
         fontSize = 14.sp,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         fontWeight = FontWeight.Bold,

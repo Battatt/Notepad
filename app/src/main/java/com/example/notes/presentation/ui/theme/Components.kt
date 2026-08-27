@@ -21,10 +21,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import com.example.notes.R
 import com.example.notes.domain.ContentItem
 
 
@@ -99,7 +101,7 @@ fun TextContent(
         ),
         placeholder = {
             Text(
-                text = "Note something down",
+                text = stringResource(R.string.note_something_down),
                 fontSize = 16.sp,
                 color = MaterialTheme.colorScheme.onBackground.copy(
                     alpha = 0.2f,
